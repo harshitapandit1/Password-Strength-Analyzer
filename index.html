@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23081424'/%3E%3Ctext x='50' y='70' text-anchor='middle' font-size='60'%3E🔐%3C/text%3E%3C/svg%3E">
+<meta name="description" content="Password Security Lab — local password strength and predictability analyzer.">
+<title>Password Security Lab | Password Strength Analyzer</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <aside class="sidebar" aria-label="Application navigation">
+    <div class="brand-mark" aria-hidden="true">🔐</div>
+    <nav class="side-nav">
+      <a class="side-link active" href="#analyzer"><span class="side-icon">⌂</span><span>Analyzer</span></a>
+      <a class="side-link" href="#generator"><span class="side-icon">⚿</span><span>Generator</span></a>
+      <a class="side-link" href="#security-tips"><span class="side-icon">▣</span><span>Security Tips</span></a>
+      <a class="side-link" href="#about"><span class="side-icon">ⓘ</span><span>About</span></a>
+    </nav>
+    <div class="sidebar-quote">
+      <span>“Stronger<br>Passwords<br>Safer Tomorrow”</span>
+      <div class="quote-line"></div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-lock" aria-hidden="true">🔐</div>
+      <div>
+        <div class="brand-title">PASSWORD <span>SECURITY LAB</span></div>
+        <div class="brand-subtitle">Password Strength Analyzer</div>
+      </div>
+    </div>
+    <div class="local-status">
+      <span class="status-dot"></span>
+      <div><strong>Local Analysis Active</strong><small>Your password never leaves this browser.</small></div>
+    </div>
+  </header>
+
+  <main class="workspace" id="analyzer">
+    <!-- LEFT PANE -->
+    <section class="left-pane pane">
+      <div class="step-badge">STEP 1</div>
+      <h1>Enter Your Password</h1>
+      <p class="pane-subtitle">Type a password to analyze its strength and predictability.</p>
+
+      <div class="password-row">
+        <input type="password" id="password-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type or paste a password..." aria-label="Password to analyze">
+        <button id="toggle-visibility" class="icon-btn" type="button" aria-label="Show password">◉</button>
+        <button id="clear-btn" class="icon-btn" type="button" aria-label="Clear password">×</button>
+      </div>
+
+      <div class="privacy-card">
+        <div class="notice-icon safe">🔒</div>
+        <div><strong>Analyzed locally in your browser</strong><span>Your password is not sent to a server.</span></div>
+      </div>
+      <div class="privacy-card warning-card">
+        <div class="notice-icon warning">⚠</div>
+        <div><span>Do not enter passwords you currently use for important accounts.</span></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="step-badge">STEP 2</div>
+      <h2 id="generator">Generate a Secure Password</h2>
+      <p class="pane-subtitle">Need a strong password? Generate one using cryptographically secure randomness.</p>
+
+      <div class="generator-head"><strong>Length: <span id="gen-length-value">16</span></strong><span>8 – 32</span></div>
+      <input class="range" type="range" id="gen-length" min="8" max="32" value="16" aria-label="Generated password length">
+      <button id="generate-btn" class="primary-btn" type="button">🔒 &nbsp; Generate Strong Password</button>
+
+      <div id="generated-output" class="generated-output" hidden>
+        <code id="generated-password"></code>
+        <button id="copy-generated" class="copy-btn" type="button" aria-label="Copy generated password">▣</button>
+      </div>
+      <div class="generator-meta">
+        <span>✓ Generated locally</span><span>✓ Uses Web Crypto API</span><span>✓ Nothing is stored</span>
+      </div>
+      <p class="generator-note">Generated locally using <code>crypto.getRandomValues()</code>. Nothing is sent anywhere or stored.</p>
+
+      <div class="wave-decoration" aria-hidden="true"></div>
+    </section>
+
+    <!-- RIGHT PANE -->
+    <section class="right-pane pane" aria-live="polite">
+      <div class="results-head">
+        <div>
+          <div class="step-badge">ANALYSIS RESULTS</div>
+          <h2>Password Analysis</h2>
+          <p class="pane-subtitle">Detailed analysis of your password strength, patterns and security.</p>
+        </div>
+        <div class="realtime"><span class="status-dot"></span> Updated in real-time</div>
+      </div>
+
+      <div id="analysis-placeholder" class="analysis-placeholder">
+        <div class="placeholder-lock">🔐</div>
+        <h3>Ready for analysis</h3>
+        <p>Enter a password in the left panel to see its security analysis here.</p>
+      </div>
+
+      <div id="analysis-content" hidden>
+        <div class="score-character-grid">
+          <section class="score-card">
+            <div class="score-ring" id="score-ring" style="--score:0;">
+              <div class="score-inner"><strong id="score-value">0</strong><span>/ 100</span></div>
+            </div>
+            <div id="strength-label" class="strength-label">—</div>
+            <p class="weakness-summary" id="weakness-summary">No major weaknesses detected.</p>
+          </section>
+
+          <section class="card character-card" id="details-section">
+            <div class="card-title-row"><h3>▣ &nbsp; Character Analysis</h3><strong id="length-count">0 characters</strong></div>
+            <div class="character-grid" id="char-analysis-list"></div>
+            <div class="length-inline"><span>Length assessment</span><strong id="length-feedback"></strong></div>
+          </section>
+        </div>
+
+        <section class="card security-card" id="security-analysis">
+          <h3>🛡 &nbsp; Security Analysis</h3>
+          <div class="security-table" id="security-table"></div>
+        </section>
+
+        <div class="bottom-grid">
+          <section class="card entropy-card" id="entropy-section">
+            <h3>▥ &nbsp; Estimated Entropy / Guessability</h3>
+            <div class="entropy-main"><strong id="entropy-raw">0 bits</strong><span>Theoretical estimate</span></div>
+            <div class="guessability" id="entropy-guessability">—</div>
+            <p class="muted">Higher values indicate greater theoretical unpredictability. This is not a precise cryptographic measurement.</p>
+          </section>
+
+          <section class="card recommendations-card" id="recommendations-section">
+            <h3>💡 &nbsp; Security Recommendations</h3>
+            <ol class="recommendation-list" id="recommendation-list"></ol>
+          </section>
+        </div>
+
+        <section class="card weaknesses-card" id="weaknesses-section">
+          <h3>⚠ &nbsp; Detected Weaknesses</h3>
+          <ul class="weakness-list" id="weakness-list"></ul>
+          <p class="muted" id="no-weakness-msg" hidden>No obvious weaknesses were detected by this analyzer.</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <!-- SECURITY TIPS PANEL -->
+  <section id="security-tips" class="info-overlay" hidden aria-labelledby="security-tips-title">
+    <div class="info-modal" role="dialog" aria-modal="true">
+      <button class="info-close" type="button" data-close-info aria-label="Close Security Tips">×</button>
+      <div class="step-badge">SECURITY GUIDE</div>
+      <h2 id="security-tips-title">Password Security Tips</h2>
+      <p class="info-intro">Follow these practices to create passwords that are harder to guess and safer to use across your accounts.</p>
+
+      <div class="tips-grid">
+        <article class="tip-card">
+          <div class="tip-number">01</div>
+          <div><h3>Use Long Passwords</h3><p>Prefer long passwords or passphrases. Length generally provides stronger resistance against brute-force guessing.</p></div>
+        </article>
+        <article class="tip-card">
+          <div class="tip-number">02</div>
+          <div><h3>Use a Unique Password</h3><p>Never reuse the same password across important accounts. A breach of one service should not expose your other accounts.</p></div>
+        </article>
+        <article class="tip-card">
+          <div class="tip-number">03</div>
+          <div><h3>Avoid Predictable Patterns</h3><p>Avoid sequences such as 123456, qwerty, repeated characters, common words and simple substitutions.</p></div>
+        </article>
+        <article class="tip-card">
+          <div class="tip-number">04</div>
+          <div><h3>Avoid Personal Information</h3><p>Don't use names, birthdays, phone numbers or other information that could be discovered about you.</p></div>
+        </article>
+        <article class="tip-card">
+          <div class="tip-number">05</div>
+          <div><h3>Consider a Password Manager</h3><p>A password manager can generate and store unique passwords so you don't need to memorize every password.</p></div>
+        </article>
+        <article class="tip-card">
+          <div class="tip-number">06</div>
+          <div><h3>Enable Multi-Factor Authentication</h3><p>MFA provides an additional layer of protection if a password is compromised.</p></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT PANEL -->
+  <section id="about" class="info-overlay" hidden aria-labelledby="about-title">
+    <div class="info-modal about-modal" role="dialog" aria-modal="true">
+      <button class="info-close" type="button" data-close-info aria-label="Close About">×</button>
+      <div class="step-badge">ABOUT THE PROJECT</div>
+      <h2 id="about-title">Password Security Lab</h2>
+      <p class="info-intro">An educational cybersecurity tool designed to analyze password strength, predictability and common weaknesses.</p>
+
+      <div class="about-features">
+        <div><strong>LOCAL ANALYSIS</strong><span>Password analysis is performed inside the browser.</span></div>
+        <div><strong>PATTERN DETECTION</strong><span>Checks common passwords, dictionary patterns, sequences and repetition.</span></div>
+        <div><strong>SECURE GENERATION</strong><span>Generated passwords use the Web Crypto API for randomness.</span></div>
+        <div><strong>EDUCATIONAL PURPOSE</strong><span>Results are heuristic guidance and are not a guarantee of security.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/patterns.js"></script>
+  <script src="js/analyzer.js"></script>
+  <script src="js/recommendations.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
