@@ -156,16 +156,6 @@
   // STRENGTH COLORS
   // =========================================================
 
-  /*
-   * These colors are also used by the score ring.
-   *
-   * VERY WEAK  -> red
-   * WEAK       -> red
-   * FAIR       -> amber
-   * STRONG     -> green
-   * VERY STRONG-> green
-   */
-
   const STRENGTH_COLORS = {
     "VERY WEAK": "#ff5b66",
     "WEAK": "#ff5b66",
@@ -187,11 +177,7 @@
     items.forEach((text) => {
       const li = document.createElement("li");
 
-      /*
-       * textContent is intentionally used instead of innerHTML.
-       * This prevents analyzed data from being interpreted as HTML.
-       */
-
+      // Use textContent for safe DOM rendering.
       li.textContent = text;
 
       list.appendChild(li);
@@ -230,11 +216,6 @@
       if (strengthLabel) {
         strengthLabel.textContent = "—";
 
-        /*
-         * Remove the data attribute so CSS does not keep
-         * the previous password's status color.
-         */
-
         strengthLabel.removeAttribute("data-strength");
 
         strengthLabel.style.backgroundColor = "";
@@ -245,6 +226,7 @@
 
       if (scoreRing) {
         scoreRing.style.setProperty("--score", "0");
+
         scoreRing.style.setProperty(
           "--ring-color",
           "#1b3552"
@@ -292,8 +274,7 @@
     // =======================================================
 
     const strengthLevel =
-      String(result.strength.level || "")
-        .toUpperCase();
+      String(result.strength.level || "").toUpperCase();
 
     const strengthColor =
       STRENGTH_COLORS[strengthLevel] ||
@@ -303,26 +284,10 @@
       strengthLabel.textContent =
         strengthLevel;
 
-      /*
-       * IMPORTANT:
-       *
-       * This attribute allows style.css to apply the correct
-       * red / amber / green styling.
-       *
-       * Example:
-       * data-strength="VERY WEAK"
-       */
-
       strengthLabel.setAttribute(
         "data-strength",
         strengthLevel
       );
-
-      /*
-       * The CSS contains !important status rules, so these
-       * values will not override the status-specific styling.
-       * They provide a safe fallback.
-       */
 
       strengthLabel.style.color =
         strengthColor;
@@ -476,7 +441,6 @@
           row.className =
             "security-row";
 
-          // Status icon
           const icon =
             document.createElement("span");
 
@@ -497,14 +461,12 @@
               "#ff5b66";
           }
 
-          // Check name
           const name =
             document.createElement("span");
 
           name.textContent =
             label;
 
-          // Status
           const resultText =
             document.createElement("span");
 
@@ -519,7 +481,6 @@
               "#ff5b66";
           }
 
-          // Value
           const valueText =
             document.createElement("span");
 
@@ -601,10 +562,6 @@
       );
     }
 
-    /*
-     * Remove duplicate weakness messages.
-     */
-
     const uniqueWeaknesses =
       [...new Set(weaknesses)];
 
@@ -673,19 +630,6 @@
     if (!input) {
       return;
     }
-
-    /*
-     * The password is read directly from the input and passed
-     * to the analyzer.
-     *
-     * It is not:
-     * - logged
-     * - stored
-     * - sent to a server
-     * - placed in the URL
-     * - written to localStorage
-     * - written to sessionStorage
-     */
 
     const password =
       input.value;
@@ -830,12 +774,6 @@
   // =========================================================
   // SECURE PASSWORD GENERATION
   // =========================================================
-
-  /*
-   * Rejection sampling avoids the small modulo bias that
-   * can occur when random values are directly reduced using
-   * value % charset.length.
-   */
 
   function generateSecurePassword(length) {
     if (
@@ -983,10 +921,7 @@
           );
 
         } catch (_) {
-          /*
-           * Clipboard access may be unavailable
-           * in some browser/local-server contexts.
-           */
+          // Clipboard may be unavailable.
         }
       }
     );
@@ -1006,16 +941,30 @@
       "[data-close-info]"
     );
 
+  /*
+   * Close every information panel.
+   *
+   * Using setAttribute/removeAttribute here makes the
+   * hidden state explicit and avoids conflicts with CSS.
+   */
+
   function closeInfoPanels() {
     infoOverlays.forEach(
       (panel) => {
-        panel.hidden = true;
+        panel.setAttribute(
+          "hidden",
+          ""
+        );
       }
     );
 
     document.body.style.overflow =
       "";
   }
+
+  /*
+   * Open one information panel.
+   */
 
   function openInfoPanel(id) {
     closeInfoPanels();
@@ -1027,10 +976,31 @@
       return;
     }
 
-    panel.hidden = false;
+    /*
+     * Remove the HTML hidden attribute.
+     * This makes the panel visible.
+     */
+
+    panel.removeAttribute("hidden");
 
     document.body.style.overflow =
       "hidden";
+
+    /*
+     * Move keyboard focus to the close button
+     * when available.
+     */
+
+    const closeButton =
+      panel.querySelector(
+        "[data-close-info]"
+      );
+
+    if (closeButton) {
+      setTimeout(() => {
+        closeButton.focus();
+      }, 0);
+    }
   }
 
   // =========================================================
@@ -1051,6 +1021,42 @@
       behavior: "smooth",
       block: "start"
     });
+  }
+
+  // =========================================================
+  // SET SIDEBAR ACTIVE LINK
+  // =========================================================
+
+  function setActiveSideLink(id) {
+    document
+      .querySelectorAll(".side-link")
+      .forEach((item) => {
+        const href =
+          item.getAttribute("href");
+
+        item.classList.toggle(
+          "active",
+          href === `#${id}`
+        );
+      });
+  }
+
+  // =========================================================
+  // SET TOP NAV ACTIVE LINK
+  // =========================================================
+
+  function setActiveTopLink(id) {
+    document
+      .querySelectorAll(".top-nav a")
+      .forEach((item) => {
+        const href =
+          item.getAttribute("href");
+
+        item.classList.toggle(
+          "active",
+          href === `#${id}`
+        );
+      });
   }
 
   // =========================================================
@@ -1084,6 +1090,8 @@
           ) {
             openInfoPanel(id);
 
+            setActiveSideLink(id);
+
             history.replaceState(
               null,
               "",
@@ -1092,23 +1100,14 @@
           } else {
             scrollToSection(id);
 
+            setActiveSideLink(id);
+
             history.replaceState(
               null,
               "",
               `#${id}`
             );
           }
-
-          document
-            .querySelectorAll(
-              ".side-link"
-            )
-            .forEach((item) => {
-              item.classList.toggle(
-                "active",
-                item === link
-              );
-            });
         }
       );
     });
@@ -1144,6 +1143,8 @@
           ) {
             openInfoPanel(id);
 
+            setActiveTopLink(id);
+
             history.replaceState(
               null,
               "",
@@ -1152,23 +1153,14 @@
           } else {
             scrollToSection(id);
 
+            setActiveTopLink(id);
+
             history.replaceState(
               null,
               "",
               `#${id}`
             );
           }
-
-          document
-            .querySelectorAll(
-              ".top-nav a"
-            )
-            .forEach((item) => {
-              item.classList.toggle(
-                "active",
-                item === link
-              );
-            });
         }
       );
     });
@@ -1183,6 +1175,9 @@
         "click",
         () => {
           closeInfoPanels();
+
+          setActiveSideLink("analyzer");
+          setActiveTopLink("analyzer");
 
           history.replaceState(
             null,
@@ -1204,10 +1199,12 @@
         "click",
         (event) => {
           if (
-            event.target ===
-            overlay
+            event.target === overlay
           ) {
             closeInfoPanels();
+
+            setActiveSideLink("analyzer");
+            setActiveTopLink("analyzer");
 
             history.replaceState(
               null,
@@ -1230,7 +1227,19 @@
       if (
         event.key === "Escape"
       ) {
+        const openPanel =
+          document.querySelector(
+            ".info-overlay:not([hidden])"
+          );
+
+        if (!openPanel) {
+          return;
+        }
+
         closeInfoPanels();
+
+        setActiveSideLink("analyzer");
+        setActiveTopLink("analyzer");
 
         history.replaceState(
           null,
@@ -1254,8 +1263,33 @@
       id === "about"
     ) {
       openInfoPanel(id);
+
+      setActiveSideLink(id);
+      setActiveTopLink(id);
+
+      return;
     }
+
+    if (id === "generator") {
+      setActiveSideLink("generator");
+      setActiveTopLink("generator");
+      return;
+    }
+
+    setActiveSideLink("analyzer");
+    setActiveTopLink("analyzer");
   }
+
+  // =========================================================
+  // HANDLE HASH CHANGES
+  // =========================================================
+
+  window.addEventListener(
+    "hashchange",
+    () => {
+      handleInitialHash();
+    }
+  );
 
   // =========================================================
   // INITIALIZE APPLICATION
@@ -1267,11 +1301,6 @@
       handleInitialHash();
     })
     .catch(() => {
-      /*
-       * The fallback datasets are already available,
-       * so the application can still analyze passwords.
-       */
-
       runAnalysis();
       handleInitialHash();
     });
